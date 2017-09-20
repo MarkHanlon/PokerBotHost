@@ -44,7 +44,7 @@ namespace PokerBotHost
         {
             app.UseMvc();
 
-            tournamentService.Run();
+            tournamentService.Start();
         }
     }
 }

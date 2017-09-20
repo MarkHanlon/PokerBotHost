@@ -22,8 +22,10 @@ namespace PokerBotHost.GameHost
             _context = context;
         }
 
-        public void Run()
+        public void Start()
         {
+            // TODO: Make this non-blocking!
+
             Console.WriteLine("Starting TournamentService");
             bool running = true;
             while (running)
