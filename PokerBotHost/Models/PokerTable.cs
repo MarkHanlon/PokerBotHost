@@ -21,6 +21,6 @@ namespace PokerBotHost.Models
         [JsonConverter(typeof(StringEnumConverter))]
         public TableStates TableState { get; set; } 
 
-
+        public List<Player> Players { get; set; }
     }
 }
