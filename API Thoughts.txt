@@ -1,0 +1,38 @@
+
+1) View all tables (or single table)
+
+GET /tables
+GET /tables/{table_id}
+
+Returns a list of all active tables, including any that are currently in Registration. Info includes:
+- ID of table
+- State (Registration, Playing)
+- Names & stacks & money in play of players in each table
+- Whose turn it is to play
+- Pot size
+- Cards on table (flop, turn, river)
+
+2) Register for seat at a table by adding yourself as a new player
+
+POST /tables/{table_id}/player       (hierarchical)
+POST /players?table_id={table_id}    (non-hierarchcal)
+
+Body contains:
+- Player name
+
+Returns:
+- Player token (used to make plays, must be kept secret for duration of game)
+- Seat number
+
+Errors:
+- No seats available at table (Error 5??)
+
+3) Look at my hole cards
+
+GET /cards?player_id={player token}
+
+
+*) Ideas for future:
+- Add a grouping of tables (called tournaments) to allow more concurrent players in one large tournament
+- Try to follow HATEOAS (Hypermedia as the engine of application state)
+- Only the initial URL is known. Everything else can be changed and is linked in the response
