@@ -37,7 +37,7 @@ namespace PokerBotHost.Controllers
             {
                 p.Id,
                 p.Name,
-                p.Table
+                p.TableId
             }).ToList();
         }
 
@@ -51,7 +51,7 @@ namespace PokerBotHost.Controllers
                 {
                     p.Id,
                     p.Name,
-                    p.Table
+                    p.TableId
                 }).ToList();
             }
             else
@@ -60,7 +60,7 @@ namespace PokerBotHost.Controllers
             }
         }
 
-        // POST api/values
+        // POST api/players?tableId={tableId}
         [HttpPost]
         public IActionResult Post([FromBody]Player player, int tableId)
         {
@@ -74,8 +74,8 @@ namespace PokerBotHost.Controllers
                 return BadRequest();    // This table Id doesn't exist
             }
             
-            player.Token = Guid.NewGuid();            
-            player.Table = _tableContext.PokerTables.Single(t => t.Id == tableId);
+            player.Token = Guid.NewGuid();
+            player.TableId = tableId; //_tableContext.PokerTables.Single(t => t.Id == tableId);
 
             _context.Players.Add(player);
             _context.SaveChanges();

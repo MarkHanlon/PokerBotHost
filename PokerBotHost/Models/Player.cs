@@ -17,6 +17,6 @@ namespace PokerBotHost.Models
         
         public string HoleCard1 { get; set;}
         //public Card HoleCard2 { get; set; }
-        public PokerTable Table { get; set; }
+        public long TableId { get; set; }
     }
 }

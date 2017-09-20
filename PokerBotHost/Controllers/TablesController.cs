@@ -17,13 +17,6 @@ namespace PokerBotHost.Controllers
         public TablesController(PokerTableContext context)
         {
             _context = context;
-
-            if (_context.PokerTables.Count() == 0)
-            {
-                _context.PokerTables.Add(new PokerTable() { TableState = TableStates.Registering });
-                _context.SaveChanges();
-            }
-
         }
 
 
