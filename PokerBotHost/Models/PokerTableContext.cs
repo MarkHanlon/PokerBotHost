@@ -14,5 +14,6 @@ namespace PokerBotHost.Models
         }
 
         public DbSet<PokerTable> PokerTables { get; set; }
+        public DbSet<Player> Players { get; set; }
     }
 }

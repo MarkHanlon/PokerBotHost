@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using PokerBotHost.Models;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -22,9 +23,15 @@ namespace PokerBotHost.Controllers
 
         // GET: api/tables
         [HttpGet]
-        public IEnumerable<PokerTable> Get()
+        public IActionResult Get()
         {
-            return _context.PokerTables.ToList();
+            // Ensure we can see the players on a table
+            var allTables = _context.PokerTables.Include(t => t.Players);
+
+            // Create a projection to return the table id & state, and the users' id and name (via a second projection)
+            var response = allTables.Select(t => new { Id = t.Id, TableState = t.TableState.ToString(), Players = t.Players.Select(p => new { Id = p.Id, Name = p.Name }) });
+
+            return Ok(response);
         }
 
         // GET api/tables/5

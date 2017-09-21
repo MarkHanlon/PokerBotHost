@@ -25,10 +25,9 @@ namespace PokerBotHost
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddDbContext<ToDoContext>(opt => opt.UseInMemoryDatabase("ToDoList"));
-            services.AddDbContext<PokerTableContext>(opt => opt.UseInMemoryDatabase("PokerTables"));
-            services.AddDbContext<PlayerContext>(opt => opt.UseInMemoryDatabase("Players"));
+        {            
+            services.AddDbContext<PokerTableContext>(opt => opt.UseInMemoryDatabase("PokerTable"));
+            //services.AddDbContext<PlayerContext>(opt => opt.UseInMemoryDatabase("Players"));
 
             // My TournamentService background worker. Register it for DI
             services.AddScoped<TournamentService>();
@@ -40,11 +39,39 @@ namespace PokerBotHost
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, TournamentService tournamentService)
+        public void Configure(IApplicationBuilder app, TournamentService tournamentService, PokerTableContext tableContext)
         {
             app.UseMvc();
 
+            // Set up some test data
+            AddTestData(tableContext);
+
             tournamentService.Start();
+        }
+
+        private static void AddTestData(PokerTableContext context)
+        {
+            var table = new PokerTable
+            {
+                TableState = TableStates.Registering
+            };
+
+            context.PokerTables.Add(table);
+            context.SaveChanges();
+
+            var player = new Player
+            {
+                Name = "Player1",
+                Token = Guid.NewGuid(),
+                HoleCard1 = "As",
+                HoleCard2 = "Ad",
+                TableId = table.Id
+            };
+
+            context.Players.Add(player);
+            context.SaveChanges();
+
+
         }
     }
 }

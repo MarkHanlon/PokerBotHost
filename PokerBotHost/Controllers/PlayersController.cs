@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using PokerBotHost.Models;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,32 +13,26 @@ namespace PokerBotHost.Controllers
     [Route("api/[controller]")]
     public class PlayersController : Controller
     {
-        private readonly PlayerContext _context;
+        //private readonly PlayerContext _playerContext;
         private readonly PokerTableContext _tableContext;
 
-        public PlayersController(PlayerContext context, PokerTableContext tableContext, ToDoContext tdc)
+        public PlayersController(PokerTableContext tableContext)
         {
-            _context = context;
-            _tableContext = tableContext;
-            
-            if (_context.Players.Count() == 0)
-            {
-                _context.Players.Add(new Player() { Name = "Mark" });
-                _context.SaveChanges();
-            }
-            
+            //_playerContext = playerContext;
+            _tableContext = tableContext;                        
         }
 
 
-        // GET: api/values
+        // GET: api/players
         [HttpGet]
         public object Get()
-        {            
-            return _context.Players.Select(p => new
+        {
+            var allPlayers = _tableContext.Players.Include(t => t.Table.Players);
+            return allPlayers.Select(p => new
             {
                 p.Id,
                 p.Name,
-                p.TableId
+                p.Table
             }).ToList();
         }
 
@@ -47,16 +42,16 @@ namespace PokerBotHost.Controllers
         {
             if (token == null)
             {
-                return _context.Players.Where(p => p.Id == id).Select(p => new
+                return _tableContext.Players.Where(p => p.Id == id).Select(p => new
                 {
                     p.Id,
                     p.Name,
-                    p.TableId
+                    p.Table
                 }).ToList();
             }
             else
             {
-                return _context.Players.SingleOrDefault(p => p.Id == id && p.Token == token);
+                return _tableContext.Players.SingleOrDefault(p => p.Id == id && p.Token == token);
             }
         }
 
@@ -77,9 +72,11 @@ namespace PokerBotHost.Controllers
             player.Token = Guid.NewGuid();
             player.TableId = tableId; //_tableContext.PokerTables.Single(t => t.Id == tableId);
 
-            _context.Players.Add(player);
-            _context.SaveChanges();
-            
+            //_playerContext.Players.Add(player);
+            //_playerContext.SaveChanges();
+            _tableContext.Players.Add(player);
+            _tableContext.SaveChanges();
+
             return CreatedAtRoute("GetPlayer", new { id = player.Id }, player);
 
         }
