@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using PokerBotHost.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -17,6 +19,7 @@ namespace PokerBotHost.GameHost
         private Timer timer = null;
         private AutoResetEvent autoEvent = new AutoResetEvent(true);
         private static IServiceProvider _provider;
+        ConcurrentBag<Thread> gameThreads = new ConcurrentBag<Thread>();
 
         public TournamentService(PokerTableContext context, IServiceProvider provider)
         {
@@ -68,13 +71,14 @@ namespace PokerBotHost.GameHost
                     return;
                 }
 
-                // At the top of a minute, so clean up empty tables and start a new one
+                // At the top of a minute, so clean up empty tables, start a new one and turn registering
+                // tables into game playing tables if there are any players...
                 int cleanedCount = 0;
 
                 // Get DB context
                 using (IServiceScope scope = _provider.GetRequiredService<IServiceScopeFactory>().CreateScope())
                 {
-                    var context = _provider.GetService<PokerTableContext>();
+                    var context = _provider.GetService<PokerTableContext>();                    
 
                     // Find all closed tables
                     var closedTables = context.PokerTables.Where(t => t.TableState == TableStates.Closed);
@@ -84,7 +88,7 @@ namespace PokerBotHost.GameHost
                         cleanedCount++;
                     }
 
-                    // Find all empty Registering tables
+                    // Find all empty tables
                     var emptyTables = context.PokerTables.Where(t => t.Players.Any() == false);
                     foreach (PokerTable t in emptyTables)
                     {
@@ -95,8 +99,30 @@ namespace PokerBotHost.GameHost
                     context.SaveChanges();
                     Console.WriteLine("Cleaned {0} tables", cleanedCount);
 
-                    Console.WriteLine("Starting new table");
+                    // Any registering table with players can now start
+                    // Note: There should be at most one!
+                    var registeringTable = context.PokerTables.Include(t => t.Players).SingleOrDefault(t => t.TableState == TableStates.Registering);
+                    if (registeringTable != null)
+                    {
+                        if (registeringTable.Players == null || registeringTable.Players.Count() < 2)
+                        {
+                            Console.WriteLine("Cleaning registering table with {0} players", registeringTable.Players.Count());
+                            context.PokerTables.Remove(registeringTable);
+                            context.SaveChanges();
+                        }
+                        else
+                        {
+                            // Start this table playing
+                            registeringTable.TableState = TableStates.Playing;
+                            Console.WriteLine("Starting table {0} with {1} players", registeringTable.Id, registeringTable.Players.Count());
+                            context.SaveChanges();
+                            Thread pokerGameThread = new Thread(StartPokerGame);
+                            gameThreads.Add(pokerGameThread);
+                            pokerGameThread.Start(registeringTable);
+                        }
+                    }
 
+                    Console.WriteLine("Creating new table");
                     PokerTable newTable = new PokerTable() { TableState = TableStates.Registering };
                     context.Add(newTable);
                     context.SaveChanges();
@@ -115,6 +141,14 @@ namespace PokerBotHost.GameHost
                 autoEvent.Set();  // Stop() method can complete now, if called
             }
                 
+        }
+
+        private void StartPokerGame(object gameTable)
+        {
+            PokerTable table = (PokerTable)gameTable;
+
+            PokerGame game = new PokerGame(table);
+            game.Run(); // blocks until the game is complete
         }
 
     }

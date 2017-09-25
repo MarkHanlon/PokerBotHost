@@ -59,7 +59,7 @@ namespace PokerBotHost
             context.PokerTables.Add(table);
             context.SaveChanges();
 
-            var player = new Player
+            var player1 = new Player
             {
                 Name = "Player1",
                 Token = Guid.NewGuid(),
@@ -68,9 +68,20 @@ namespace PokerBotHost
                 TableId = table.Id
             };
 
-            context.Players.Add(player);
-            context.SaveChanges();
+            context.Players.Add(player1);
 
+            var player2 = new Player
+            {
+                Name = "Player2",
+                Token = Guid.NewGuid(),
+                HoleCard1 = "Ks",
+                HoleCard2 = "Kd",
+                TableId = table.Id
+            };
+
+            context.Players.Add(player2);
+
+            context.SaveChanges();
 
         }
     }
