@@ -32,22 +32,36 @@ namespace PokerBotHost.Controllers
             {
                 p.Id,
                 p.Name,
+                p.isDealer,
+                p.chipCount,
+                p.chipsInPlay,
                 p.Table
             }).ToList();
         }
 
-        // GET api/values/5
+        // GET api/players/5
         [HttpGet("{id}", Name = "GetPlayer")]
         public object Get(long id, Guid token)
         {
-            if (token == null)
+            if (token == null || token == Guid.Empty)
             {
-                return _tableContext.Players.Where(p => p.Id == id).Select(p => new
+                var players = _tableContext.Players.Include(p => p.Table); ;
+                if (players != null)
                 {
-                    p.Id,
-                    p.Name,
-                    p.Table
-                }).ToList();
+                    return players.Where(p => p.Id == id).Select(p => new
+                    {
+                        p.Id,
+                        p.Name,
+                        p.isDealer,
+                        p.chipCount,
+                        p.chipsInPlay,
+                        p.Table
+                    });
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
             else
             {

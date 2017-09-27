@@ -30,7 +30,7 @@ namespace PokerBotHost
             //services.AddDbContext<PlayerContext>(opt => opt.UseInMemoryDatabase("Players"));
 
             // My TournamentService background worker. Register it for DI
-            services.AddScoped<TournamentService>();
+            services.AddSingleton<TournamentService>();            
 
             services.AddMvc();
 
@@ -63,8 +63,7 @@ namespace PokerBotHost
             {
                 Name = "Player1",
                 Token = Guid.NewGuid(),
-                HoleCard1 = "As",
-                HoleCard2 = "Ad",
+                HoleCards = "AsAd",
                 TableId = table.Id
             };
 
@@ -74,8 +73,7 @@ namespace PokerBotHost
             {
                 Name = "Player2",
                 Token = Guid.NewGuid(),
-                HoleCard1 = "Ks",
-                HoleCard2 = "Kd",
+                HoleCards = "KsKd",
                 TableId = table.Id
             };
 

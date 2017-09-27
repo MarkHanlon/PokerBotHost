@@ -22,5 +22,12 @@ namespace PokerBotHost.Models
         public TableStates TableState { get; set; } 
 
         public List<Player> Players { get; set; }
+
+        public string flopCards { get; set; }
+        public string turnCard { get; set; }
+        public string riverCard { get; set; }
+
+        public int potSize { get; set; }
+
     }
 }

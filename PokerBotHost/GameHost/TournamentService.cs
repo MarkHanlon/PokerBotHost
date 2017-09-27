@@ -14,19 +14,17 @@ namespace PokerBotHost.GameHost
     /// Responsible for creating new tables for players to register on
     /// </summary>
     public class TournamentService
-    {
-        private readonly PokerTableContext _context;
+    {        
         private Timer timer = null;
         private AutoResetEvent autoEvent = new AutoResetEvent(true);
         private static IServiceProvider _provider;
         ConcurrentBag<Thread> gameThreads = new ConcurrentBag<Thread>();
 
-        public TournamentService(PokerTableContext context, IServiceProvider provider)
+        public TournamentService(IServiceProvider provider)
         {
             Console.WriteLine("Creating TournamentService");
 
             _provider = provider;
-            _context = context;
         }
 
         public void Start()
@@ -78,7 +76,8 @@ namespace PokerBotHost.GameHost
                 // Get DB context
                 using (IServiceScope scope = _provider.GetRequiredService<IServiceScopeFactory>().CreateScope())
                 {
-                    var context = _provider.GetService<PokerTableContext>();                    
+                    //var context = _provider.GetService<PokerTableContext>();                    
+                    var context = scope.ServiceProvider.GetService<PokerTableContext>();
 
                     // Find all closed tables
                     var closedTables = context.PokerTables.Where(t => t.TableState == TableStates.Closed);
@@ -147,7 +146,7 @@ namespace PokerBotHost.GameHost
         {
             PokerTable table = (PokerTable)gameTable;
 
-            PokerGame game = new PokerGame(table);
+            PokerGame game = new PokerGame(table, _provider);
             game.Run(); // blocks until the game is complete
         }
 
