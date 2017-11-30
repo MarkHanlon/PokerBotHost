@@ -146,8 +146,8 @@ namespace PokerBotHost.GameHost
         {
             PokerTable table = (PokerTable)gameTable;
 
-            PokerGame game = new PokerGame(table, _provider);
-            game.Run(); // blocks until the game is complete
+            PokerGame game = _provider.GetService<PokerGame>();
+            game.Run(table.Id); // blocks until the game is complete
         }
 
     }

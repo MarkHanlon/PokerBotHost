@@ -11,17 +11,15 @@ namespace PokerBotHost.GameHost
 {
     public class PokerGame
     {
-        private PokerTable _table;
         private IServiceProvider _provider;
 
-        public PokerGame(PokerTable table, IServiceProvider provider)
+        public PokerGame(IServiceProvider provider)
         {
-            this._table = table;
-            this._provider = provider;
-            Console.WriteLine("Starting new Poker Game with {0} players!", table.Players.Count());
+            _provider = provider;
+            Console.WriteLine("Starting new Poker Game object...");
         }
 
-        public void Run()
+        public void Run(long pokerTableId)
         {
             // Blocks until the game is over, or forced to stop
             // TODO: Add a Cancellation Token to watch
@@ -34,7 +32,7 @@ namespace PokerBotHost.GameHost
                 var context = scope.ServiceProvider.GetService<PokerTableContext>();
 
                 // Get this table
-                var table = context.PokerTables.Include(t => t.Players).Single(t => t.Id == _table.Id);
+                var table = context.PokerTables.Include(t => t.Players).Single(t => t.Id == pokerTableId);
 
                 // Set dealer
                 table.Players[0].isDealer = true;
@@ -46,7 +44,7 @@ namespace PokerBotHost.GameHost
                 }
                 context.SaveChanges();
 
-                while (_table.Players.Count() > 1)
+                while (table.Players.Count() > 1)
                 {
                     // Take blinds
 

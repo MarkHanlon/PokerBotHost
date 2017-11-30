@@ -30,7 +30,8 @@ namespace PokerBotHost
             //services.AddDbContext<PlayerContext>(opt => opt.UseInMemoryDatabase("Players"));
 
             // My TournamentService background worker. Register it for DI
-            services.AddSingleton<TournamentService>();            
+            services.AddSingleton<TournamentService>();
+            services.AddTransient<PokerGame>();
 
             services.AddMvc();
 
